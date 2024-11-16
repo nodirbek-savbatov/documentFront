@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Document Site</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 70px;
+            background: linear-gradient(to right, #673ab7, #512da8);
+        }
+        .fixed-top {
+            z-index: 1030;
+        }
+        .nav-link {
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+        .nav-link i {
+            margin-right: 8px;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @media (max-width: 767px) {
+            .navbar-collapse {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">Documents Site</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showSection('settings-section'); toggleNavbar()">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showSection('file-section'); toggleNavbar()">
+                        <i class="fas fa-file-alt"></i> Files
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <section id="settings-section" class="container mt-5 content-section">
+        <h2>Settings</h2>
+        <form id="settingsForm">
+            <div class="form-group">
+                <label for="settingOption1">Update Name</label>
+                <input type="text" class="form-control" id="settingOption1" placeholder="Your new name">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </section>
+
+
+    <section id="file-section" class="container mt-5 content-section active">
+        <h2>Files</h2>
+        <table class="table table-striped" id="file-table">
+            <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Owner</th>
+                    <th scope="col">File Name</th>
+                </tr>
+            </thead>
+            <tbody id="file-table-body">
+
+            </tbody>
+        </table>
+    </section>
+
+    
+
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="./js/index.js"></script>
+</body>
+</html>

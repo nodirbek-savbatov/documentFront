@@ -1,0 +1,20 @@
+body {
+    padding-top: 70px; /* Header uchun joy */
+}
+.fixed-top {
+    z-index: 1030;
+}
+.nav-link {
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+}
+.nav-link i {
+    margin-right: 8px;
+}
+.content-section {
+    display: none;
+}
+.content-section.active {
+    display: block;
+}

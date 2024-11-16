@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <style>
+      body {
+        padding-top: 70px;
+        background: linear-gradient(to right, #673ab7, #512da8);
+      }
+      .fixed-top {
+        z-index: 1030;
+      }
+      .nav-link {
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+      }
+      .nav-link i {
+        margin-right: 8px;
+      }
+      .content-section {
+        display: none;
+      }
+      .content-section.active {
+        display: block;
+      }
+      @media (max-width: 767px) {
+        .navbar-collapse {
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+      <a class="navbar-brand" href="#">Admin</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              onclick="showSection('settings-section')"
+              data-toggle="collapse"
+              data-target="#navbarNav"
+            >
+              <i class="fas fa-cog"></i> Settings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              onclick="showSection('file-section')"
+              data-toggle="collapse"
+              data-target="#navbarNav"
+            >
+              <i class="fas fa-file-alt"></i> Files
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              onclick="showSection('teachers-section')"
+              data-toggle="collapse"
+              data-target="#navbarNav"
+            >
+              <i class="fas fa-chalkboard-teacher"></i> Teachers
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              onclick="showSection('students-section')"
+              data-toggle="collapse"
+              data-target="#navbarNav"
+            >
+              <i class="fas fa-user-graduate"></i> Students
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <section id="settings-section" class="container mt-5 content-section">
+      <h2>Settings</h2>
+      <form id="settingsForm">
+        <div class="form-group">
+          <label for="settingOption1">Update Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="settingOption1"
+            placeholder="Your new name"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </form>
+    </section>
+
+    <section id="file-section" class="container mt-5 content-section active">
+      <h2>Files</h2>
+      <p id="files-paragraf"></p>
+      <table class="table table-striped" id="file-table">
+        <thead>
+          <tr>
+            <th scope="col">No</th>
+            <th scope="col">Owner</th>
+            <th scope="col">File Name</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="file-table-body">
+          <!-- Dynamic content will be injected here -->
+        </tbody>
+      </table>
+    </section>
+
+    <section id="teachers-section" class="container mt-5 content-section">
+      <h2>Teachers</h2>
+      <p id="teachers-section-p"></p>
+      <button id="createTeacherBtn" class="btn btn-primary mb-3">
+        Create Teacher
+      </button>
+
+      <table class="table table-bordered" id="teachersTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="teachersTableBody">
+          <!-- Teachers data will be populated here -->
+        </tbody>
+      </table>
+    </section>
+
+    <section id="students-section" class="container mt-5 content-section">
+      <h2>Students</h2>
+      <button id="addStudentBtn" class="btn btn-primary mb-3">
+        Add Student
+      </button>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTableBody">
+          <!-- Students data will be dynamically injected here -->
+        </tbody>
+      </table>
+    </section>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      const BASE_URL = 'http://137.184.37.207:8080';
+
+      function showSection(sectionId) {
+        document.querySelectorAll('.content-section').forEach((section) => {
+          section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+      }
+
+      async function deleteFile(button, documentId) {
+        try {
+          const response = await fetch(`${BASE_URL}/documents/${documentId}`, {
+            method: 'DELETE',
+            'Authorization': `Bearer ${localStorage.getItem("accesToken")}`
+          });
+
+          if (response.ok) {
+            button.closest('tr').remove();
+            Swal.fire('Deleted!', 'The file has been deleted.', 'success');
+          } else {
+            throw new Error('Failed to delete the file');
+          }
+        } catch (error) {
+          console.error('Error deleting file:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Could not delete the file',
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        }
+      }
+
+      async function loadFiles() {
+        document.getElementById('files-paragraf').textContent = '';
+        document.getElementById('file-table').style.display = 'table';
+        try {
+          const response = await fetch(`${BASE_URL}/documents`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch documents');
+          }
+
+          const data = await response.json();
+          const fileTableBody = document.getElementById('file-table-body');
+          fileTableBody.innerHTML = '';
+          if (data.length === 0) {
+            document.getElementById('files-paragraf').textContent =
+              'The files are visible here';
+            document.getElementById('file-table').style.display = 'none';
+          }
+          data.forEach((doc, index) => {
+            const row = document.createElement('tr');
+            const ownerName = doc.teacher?.full_name || 'Unknown';
+
+            row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${ownerName}</td>
+                            <td><a href="${BASE_URL}/uploads/${doc.file}">${doc.name}</a></td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteFile(this, '${doc.id}')">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                        `;
+            fileTableBody.appendChild(row);
+          });
+        } catch (error) {
+          console.error('Error loading files:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Could not load files from the server',
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        }
+      }
+
+      async function fetchTeachers() {
+        document.getElementById('teachers-section-p').textContent = '';
+        document.getElementById('teachersTable').style.display = 'table';
+        const response = await fetch(`${BASE_URL}/user/allTechers`);
+        const teachers = await response.json();
+        if (teachers.length === 0) {
+          document.getElementById('teachers-section-p').textContent =
+            'Teachers can be seen here';
+          document.getElementById('teachersTable').style.display = 'none';
+        }
+        const teachersTableBody = document.getElementById('teachersTableBody');
+        teachersTableBody.innerHTML = '';
+        teachers.forEach((teacher, index) => {
+          teachersTableBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${teacher.full_name}</td>
+                            <td>${teacher.email}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="deleteTeacher('${teacher.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+        });
+      }
+
+      document
+        .getElementById('createTeacherBtn')
+        .addEventListener('click', () => {
+          Swal.fire({
+            title: 'Create Teacher',
+            html:
+              `<input type="text" id="teacherName" class="swal2-input" placeholder="Full Name">` +
+              `<input type="email" id="teacherEmail" class="swal2-input" placeholder="Email">` +
+              `<input type="password" id="teacherPassword" class="swal2-input" placeholder="Password">`,
+            focusConfirm: false,
+            preConfirm: () => {
+              const fullName = document
+                .getElementById('teacherName')
+                .value.trim();
+              const email = document
+                .getElementById('teacherEmail')
+                .value.trim();
+              const password = document
+                .getElementById('teacherPassword')
+                .value.trim();
+
+              const emailPattern =
+                /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+              if (!fullName || !email || !password) {
+                Swal.showValidationMessage('All fields are required');
+                return false;
+              }
+              if (!emailPattern.test(email)) {
+                Swal.showValidationMessage(
+                  'Please enter a valid email address',
+                );
+                return false;
+              }
+
+              return { full_name: fullName, email, password, role: 'teacher' };
+            },
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              await fetch(`${BASE_URL}/user/teacher`, {
+                method: 'POST',
+                headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem("accesToken")}`
+                },
+                body: JSON.stringify(result.value),
+              }).then((response) => {
+                if (!response.ok) {
+                  if (response.status === 400) {
+                    alert('Xatolik: Bad request');
+                  } else {
+                    alert('Xatolik: ' + response.statusText);
+                  }
+                  throw new Error('Request failed');
+                }
+                return response.json();
+              });
+
+              Swal.fire('Created!', 'The teacher has been created.', 'success');
+              fetchTeachers();
+            }
+          });
+        });
+
+      async function deleteTeacher(id) {
+        await fetch(`${BASE_URL}/user/${id}`, {
+          method: 'DELETE',
+          'Authorization': `Bearer ${localStorage.getItem("accesToken")}`
+        });
+        Swal.fire('Deleted!', 'The teacher has been deleted.', 'success');
+        fetchTeachers();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadFiles();
+        fetchTeachers();
+      });
+
+      async function fetchStudents() {
+        try {
+          const response = await fetch(`${BASE_URL}/user/allStudents`,{
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem("accessToken")}`,
+              
+            },
+          });
+          if (!response.ok) {
+            throw new Error('Failed to fetch students');
+          }
+
+          const students = await response.json();
+          const studentsTableBody =
+            document.getElementById('studentsTableBody');
+          studentsTableBody.innerHTML = '';
+
+          students.forEach((student, index) => {
+            studentsTableBody.innerHTML += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${student.full_name}</td>
+                                <td>${student.email}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteStudent(${student.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+          });
+        } catch (error) {
+          console.error('Error fetching students:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Could not load students from the server',
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        }
+      }
+
+      async function deleteStudent(studentId) {
+        try {
+          const response = await fetch(`${BASE_URL}/user/${studentId}`, {
+            method: 'DELETE',
+            'Authorization': `Bearer ${localStorage.getItem("accesToken")}`
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to delete student');
+          }
+
+          Swal.fire('Deleted!', 'The student has been deleted.', 'success');
+          fetchStudents();
+        } catch (error) {
+          console.error('Error deleting student:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Could not delete the student',
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        fetchStudents();
+      });
+
+      document.getElementById('addStudentBtn').addEventListener('click', () => {
+        Swal.fire({
+          title: 'Add Student',
+          html: `
+                        <input type="text" id="studentName" class="swal2-input" placeholder="Full Name">
+                        <input type="email" id="studentEmail" class="swal2-input" placeholder="Email">
+                         <input type="password" id="studentPassword" class="swal2-input" placeholder="Password">
+                    `,
+          focusConfirm: false,
+          preConfirm: () => {
+            const fullName = document
+              .getElementById('studentName')
+              .value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const password = document.getElementById('studentPassword').value.trim();
+
+            if (!fullName || !email || !password) {
+              Swal.showValidationMessage('All fields are required');
+              return false;
+            }
+
+            return { full_name: fullName, email, role: 'student', password };
+          },
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const response = await fetch(`${BASE_URL}/user`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem("accesToken")}`
+                },
+                body: JSON.stringify(result.value),
+              });
+              console.log(result.value)
+
+              if (!response.ok) {
+                throw new Error('Failed to create student');
+              }
+
+              Swal.fire('Created!', 'The student has been added.', 'success');
+              fetchStudents();
+            } catch (error) {
+              console.error('Error creating student:', error);
+              Swal.fire({
+                title: 'Error',
+                text: 'Could not create student',
+                icon: 'error',
+                confirmButtonText: 'OK',
+              });
+            }
+          }
+        });
+      });
+
+      document
+        .getElementById('settingsForm')
+        .addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          const newName = document.getElementById('settingOption1').value;
+          const userId = localStorage.getItem('userId');
+
+          if (!userId) {
+            Swal.fire({
+              title: 'Error',
+              text: 'User ID not found in localStorage',
+              icon: 'error',
+              confirmButtonText: 'OK',
+            });
+            return;
+          }
+
+          if (!newName) {
+            Swal.fire({
+              title: 'Error',
+              text: 'Please enter a new name',
+              icon: 'error',
+              confirmButtonText: 'OK',
+            });
+            return;
+          }
+
+          fetch(`http://127.0.0.1:8080/user/${userId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem("accesToken")}`
+            },
+            body: JSON.stringify({
+              full_name: newName,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data) {
+                Swal.fire({
+                  title: 'Success',
+                  text: 'Name updated successfully!',
+                  icon: 'success',
+                  confirmButtonText: 'OK',
+                });
+              } else {
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Failed to update name',
+                  icon: 'error',
+                  confirmButtonText: 'OK',
+                });
+              }
+            })
+            .catch((error) => {
+              console.error('Error updating name:', error);
+
+              Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the name',
+                icon: 'error',
+                confirmButtonText: 'OK',
+              });
+            });
+        });
+    </script>
+  </body>
+</html>

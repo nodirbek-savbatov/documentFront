@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            padding-top: 70px;
+            background: linear-gradient(to right, #673ab7, #512da8);
+        }
+        .fixed-top {
+            z-index: 1030;
+        }
+        .nav-link {
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+        .nav-link i {
+            margin-right: 8px;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @media (max-width: 767px) {
+            .navbar-collapse {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#" id="titlePage"><h2 id="titlePage">Teacher</h2></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showSection('my-files-section')" data-toggle="collapse" data-target="#navbarNav">
+                        <i class="fas fa-folder"></i> My Files
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showSection('settings-section')" data-toggle="collapse" data-target="#navbarNav">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="my-files-section" class="container mt-5 content-section active">
+        <h2>My Files</h2>
+        <button class="btn btn-success mb-3" onclick="createDocument()">Create Document</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Table No</th>
+                    <th>Filename</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="filesTableBody">
+           
+            </tbody>
+        </table>
+    </section>
+
+
+    <section id="settings-section" class="container mt-5 content-section">
+        <h2>Settings</h2>
+        <form id="settingsForm">
+            <div class="form-group">
+                <label for="settingOption1">Update Name</label>
+                <input type="text" class="form-control" id="settingOption1" placeholder="Your new name">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </section>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const BASE_URL = 'http://137.184.37.207:8080';
+
+       
+        
+   
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        const userId = localStorage.getItem('userId');
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById("titlePage").innerText = localStorage.getItem("username")
+            console
+         
+            fetch(`${BASE_URL}/user/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const filesTableBody = document.getElementById('filesTableBody');
+
+             
+                    filesTableBody.innerHTML = '';
+                    
+                    console.log(data.documents);
+                    data.documents.forEach((doc, index) => {    
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${doc.name}</td>
+                            <td>
+                                <a href="${BASE_URL}/uploads/${doc.file}" class="btn btn-primary btn-sm" download>Download</a>
+                                <button class="btn btn-danger btn-sm" onclick="deleteFile(${doc.id})">Delete</button>
+                            </td>
+                        `;
+                        filesTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+
+
+        function deleteFile(fileId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`${BASE_URL}/documents/${fileId}`, { method: 'DELETE' })
+                        .then(response => {
+                            if (response.ok) {
+                                Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+                                // Reload the table after deletion
+                                location.reload();
+                            } else {
+                                Swal.fire('Error!', 'Failed to delete the file.', 'error');
+                            }
+                        })
+                        .catch(error => console.error('Error deleting file:', error));
+                }
+            });
+        }
+
+        function createDocument() {
+            
+            if (!userId) {
+                Swal.fire('Error!', 'User ID is required!', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Create a New Document',
+                html: ` 
+                    <input type="file" id="documentFile" class="swal2-input" accept=".pdf,.docx,.txt" required>
+                    <input type="text" id="documentName" class="swal2-input" placeholder="Document Name" required>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Upload',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const file = document.getElementById('documentFile').files[0];
+                    const name = document.getElementById('documentName').value;
+
+       
+                    if (!file) {
+                        Swal.showValidationMessage('Please select a file');
+                        return false;
+                    }
+                    if (!name) {
+                        Swal.showValidationMessage('Please provide a document name');
+                        return false;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('name', name);
+                    formData.append('userId', localStorage.getItem("userId"));
+
+          
+                    console.log([...formData]);
+
+              
+                    return fetch(`${BASE_URL}/documents`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to upload document');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data);
+                        if (data.success) {
+                            Swal.fire('Success!', 'Your document has been uploaded.', 'success');
+                            window.location.reload();
+                        } else {
+                            Swal.fire('Success!', 'Your document has been uploaded.', 'success');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage('Error uploading file');
+                        console.error(error);
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+
+
+
+
+        document
+  .getElementById('settingsForm')
+  .addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const newName = document.getElementById('settingOption1').value;
+    const userId = 2;
+
+    if (!userId) {
+      Swal.fire({
+        title: 'Error',
+        text: 'User ID not found in localStorage',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
+    if (!newName) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Please enter a new name',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
+    fetch(`http://127.0.0.1:8080/user/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        full_name: newName,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          Swal.fire({
+            title: 'Success',
+            text: 'Name updated successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK',
+          });
+        } else {
+          Swal.fire({
+            title: 'Error',
+            text: 'Failed to update name',
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Error updating name:', error);
+
+        Swal.fire({
+          title: 'Error',
+          text: 'An error occurred while updating the name',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
+      });
+  });
+
+    </script>
+</body>
+</html>
